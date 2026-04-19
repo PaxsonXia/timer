@@ -1,0 +1,667 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>蕃茄鐘</title>
+    <style>
+        :root {
+            --bg: #121212;
+            --surface: #181818;
+            --surface-2: #1f1f1f;
+            --green: #1ed760;
+            --text: #ffffff;
+            --text-muted: #b3b3b3;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: SpotifyMixUI, Helvetica Neue, helvetica, arial, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+        }
+
+.datetime-display {
+            text-align: center;
+            padding: 24px 16px 8px;
+            font-size: 18px;
+            color: var(--text);
+            display: flex;
+            justify-content: center;
+            gap: 24px;
+        }
+
+        #currentDate, #currentTime {
+            color: var(--text);
+            font-weight: 700;
+            font-size: 22px;
+            font-variant-numeric: tabular-nums;
+        }
+
+        .container {
+            display: flex;
+            justify-content: center;
+            align-items: stretch;
+            gap: 32px;
+            padding: 48px 16px;
+            flex-wrap: wrap;
+        }
+
+        .card {
+            background: var(--surface);
+            border-radius: 8px;
+            padding: 0 48px 48px;
+            box-shadow: rgba(0,0,0,0.3) 0px 8px 8px;
+            text-align: center;
+            width: 400px;
+            flex-shrink: 0;
+            display: flex;
+            flex-direction: column;
+            min-height: 400px;
+        }
+
+        .card header {
+            background: var(--surface-2);
+            padding: 16px 48px;
+            border-radius: 8px 8px 0 0;
+            margin: 0 -48px 16px;
+        }
+
+        .state-label {
+            font-size: 32px;
+            font-weight: 700;
+            letter-spacing: 1.4px;
+            text-transform: uppercase;
+            color: var(--green);
+            margin: 0;
+            display: inline-block;
+        }
+
+        .timer {
+            font-size: 96px;
+            font-weight: 700;
+            line-height: 1;
+            margin-bottom: 32px;
+            font-variant-numeric: tabular-nums;
+        }
+
+        .controls {
+            display: flex;
+            gap: 16px;
+            justify-content: center;
+            margin-bottom: 48px;
+        }
+
+        .btn {
+            background: var(--surface-2);
+            color: var(--text);
+            border: none;
+            padding: 14px 32px;
+            border-radius: 500px;
+            font-size: 14px;
+            font-weight: 700;
+            letter-spacing: 1.4px;
+            text-transform: uppercase;
+            cursor: pointer;
+            transition: transform 0.1s, box-shadow 0.2s;
+        }
+
+        .btn:hover {
+            transform: scale(1.02);
+            box-shadow: 0 0 0 1px var(--text);
+        }
+
+        .btn:active {
+            transform: scale(0.98);
+        }
+
+        .btn-primary {
+            background: var(--green);
+            color: #000;
+            padding: 16px 48px;
+            font-size: 16px;
+        }
+
+        .btn-primary:hover {
+            box-shadow: 0 0 0 1px var(--green);
+        }
+
+        .settings {
+            background: var(--surface);
+            padding: 24px;
+            border-radius: 8px;
+            display: inline-block;
+            margin-top: auto;
+            margin-bottom: 0;
+            align-self: center;
+            width: 100%;
+        }
+
+        .settings-title {
+            font-size: 14px;
+            font-weight: 700;
+            letter-spacing: 1.4px;
+            text-transform: uppercase;
+            color: var(--text-muted);
+            margin-bottom: 16px;
+        }
+
+        .setting-row {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            margin-bottom: 12px;
+        }
+
+        .setting-row:last-child {
+            margin-bottom: 0;
+        }
+
+        .setting-label {
+            font-size: 14px;
+            color: var(--text-muted);
+            min-width: 60px;
+            text-align: left;
+        }
+
+        .number-input {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: var(--surface-2);
+            border-radius: 500px;
+            padding: 4px;
+        }
+
+        .num-btn {
+            width: 32px;
+            height: 32px;
+            border: none;
+            border-radius: 50%;
+            background: var(--surface);
+            color: var(--text);
+            font-size: 18px;
+            font-weight: 700;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background 0.2s, transform 0.1s;
+        }
+
+        .num-btn:hover {
+            background: var(--green);
+            color: #000;
+        }
+
+        .num-btn:active {
+            transform: scale(0.92);
+        }
+
+        .num-btn:disabled {
+            cursor: default;
+        }
+
+        .num-display {
+            min-width: 48px;
+            text-align: center;
+            font-size: 16px;
+            font-weight: 700;
+            color: var(--text);
+        }
+
+        .state-focus {
+            color: var(--green);
+        }
+
+        .state-relax {
+            color: #539df5;
+        }
+
+        @media (max-width: 576px) {
+            .container {
+                flex-wrap: wrap;
+            }
+            .timer {
+                font-size: 64px;
+            }
+            .btn {
+                padding: 12px 24px;
+                font-size: 12px;
+            }
+            .btn-primary {
+                padding: 14px 36px;
+                font-size: 14px;
+            }
+            .card {
+                width: 100%;
+                max-width: 400px;
+            }
+        }
+    </style>
+    <div class="datetime-display">
+        <span id="currentDate"></span>
+        <span id="currentTime"></span>
+    </div>
+</head>
+<body>
+    <div class="container">
+        <div class="card">
+            <header>
+                <div class="state-label" id="stateLabel">蕃茄鐘</div>
+            </header>
+            
+            <div class="timer" id="timer">50:00</div>
+            
+            <div class="controls">
+                <button class="btn btn-primary" id="startBtn">開始</button>
+                <button class="btn" id="resetBtn">重置</button>
+            </div>
+            
+            <div class="settings">
+                <div class="settings-title">設定時間（分鐘）</div>
+                <div class="setting-row">
+                    <span class="setting-label">專注</span>
+                    <div class="number-input">
+                        <button class="num-btn" id="focusDec">−</button>
+                        <span class="num-display" id="focusDisplay">50</span>
+                        <button class="num-btn" id="focusInc">+</button>
+                    </div>
+                </div>
+                <div class="setting-row">
+                    <span class="setting-label">放鬆</span>
+                    <div class="number-input">
+                        <button class="num-btn" id="relaxDec">−</button>
+                        <span class="num-display" id="relaxDisplay">10</span>
+                        <button class="num-btn" id="relaxInc">+</button>
+                    </div>
+                </div>
+                <div style="flex: 1;"></div>
+            </div>
+        </div>
+        
+        <div class="card">
+            <header>
+                <div class="state-label" id="secondStateLabel">倒數計時</div>
+            </header>
+            
+            <div class="timer" id="secondTimer">03:00</div>
+            
+            <div class="controls">
+                <button class="btn btn-primary" id="secondStartBtn">開始</button>
+                <button class="btn" id="secondResetBtn">重置</button>
+            </div>
+            
+            <div class="settings">
+                <div class="settings-title">設定時間（分鐘）</div>
+                <div class="setting-row">
+                    <span class="setting-label">時間</span>
+                    <div class="number-input">
+                        <button class="num-btn" id="timeDec2">−</button>
+                        <span class="num-display" id="timeDisplay2">3</span>
+                        <button class="num-btn" id="timeInc2">+</button>
+                    </div>
+                </div>
+                <div style="flex: 1;"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const stateLabel = document.getElementById('stateLabel');
+        const secondStateLabel = document.getElementById('secondStateLabel');
+        const timerDisplay = document.getElementById('timer');
+        const secondTimerDisplay = document.getElementById('secondTimer');
+        const startBtn = document.getElementById('startBtn');
+        const resetBtn = document.getElementById('resetBtn');
+        const focusDisplay = document.getElementById('focusDisplay');
+        const relaxDisplay = document.getElementById('relaxDisplay');
+        const focusDecBtn = document.getElementById('focusDec');
+        const focusIncBtn = document.getElementById('focusInc');
+        const relaxDecBtn = document.getElementById('relaxDec');
+        const relaxIncBtn = document.getElementById('relaxInc');
+
+        const secondStartBtn = document.getElementById('secondStartBtn');
+        const secondResetBtn = document.getElementById('secondResetBtn');
+        const timeDisplay2 = document.getElementById('timeDisplay2');
+
+        let focusTime = 50;
+        let relaxTime = 10;
+        let time2 = 3;
+        let state = 'ready';
+        let isFocus = true;
+        let timeLeft = focusTime * 60;
+        let state2 = 'ready';
+        let timeLeft2 = time2 * 60;
+        let timerId = null;
+        let timerId2 = null;
+
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+        function playBeep(freq = 800, duration = 0.3) {
+            if (audioCtx.state === 'suspended') {
+                audioCtx.resume().then(() => {
+                    createAndPlayTone(freq, duration);
+                });
+            } else {
+                createAndPlayTone(freq, duration);
+            }
+        }
+
+        function createAndPlayTone(freq, duration) {
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+            osc.frequency.value = freq;
+            osc.type = 'sine';
+            gain.gain.setValueAtTime(0.5, audioCtx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + duration);
+            osc.start();
+            osc.stop(audioCtx.currentTime + duration);
+        }
+
+        function playNotification() {
+            if (audioCtx.state === 'suspended') {
+                audioCtx.resume().then(() => {
+                    playBeep(800, 0.15);
+                    setTimeout(() => playBeep(1000, 0.15), 200);
+                    setTimeout(() => playBeep(1200, 0.3), 400);
+                });
+            } else {
+                playBeep(800, 0.15);
+                setTimeout(() => playBeep(1000, 0.15), 200);
+                setTimeout(() => playBeep(1200, 0.3), 400);
+            }
+        }
+
+        function updateDisplay() {
+            const mins = Math.floor(timeLeft / 60);
+            const secs = timeLeft % 60;
+            timerDisplay.textContent = `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+            
+            const mins2 = Math.floor(timeLeft2 / 60);
+            const secs2 = timeLeft2 % 60;
+            secondTimerDisplay.textContent = `${mins2.toString().padStart(2, '0')}:${secs2.toString().padStart(2, '0')}`;
+        }
+
+        function updateStateUI() {
+            if (state === 'ready') {
+                stateLabel.textContent = '蕃茄鐘';
+                stateLabel.className = 'state-label state-focus';
+            } else if (isFocus) {
+                stateLabel.textContent = '專注';
+                stateLabel.className = 'state-label state-focus';
+            } else {
+                stateLabel.textContent = '放鬆';
+                stateLabel.className = 'state-label state-relax';
+            }
+        }
+
+        function updateStateUI2() {
+            if (state2 === 'ready') {
+                secondStateLabel.textContent = '倒數計時';
+                secondStateLabel.className = 'state-label state-focus';
+            } else {
+                secondStateLabel.textContent = '倒數中';
+                secondStateLabel.className = 'state-label state-focus';
+            }
+        }
+
+        function startTimer() {
+            if (state === 'running') return;
+            state = 'running';
+            startBtn.textContent = '暫停';
+            setTimeInputsEnabled(false);
+            updateStateUI();
+            
+            timerId = setInterval(() => {
+                timeLeft--;
+                updateDisplay();
+                
+                if (timeLeft <= 0) {
+                    clearInterval(timerId);
+                    timerId = null;
+                    playNotification();
+                    
+                    isFocus = !isFocus;
+                    timeLeft = (isFocus ? focusTime : relaxTime) * 60;
+                    updateStateUI();
+                    updateDisplay();
+                    
+                    state = 'ready';
+                    setTimeInputsEnabled(true);
+                    setTimeout(startTimer, 500);
+                }
+            }, 1000);
+        }
+
+        function pauseTimer() {
+            if (state !== 'running') return;
+            clearInterval(timerId);
+            state = 'paused';
+            startBtn.textContent = '繼續';
+        }
+
+        function resetTimer() {
+            clearInterval(timerId);
+            state = 'ready';
+            isFocus = true;
+            timeLeft = focusTime * 60;
+            updateStateUI();
+            updateDisplay();
+            startBtn.textContent = '開始';
+            setTimeInputsEnabled(true);
+            playNotification();
+        }
+
+        function startTimer2() {
+            if (state2 === 'running') return;
+            state2 = 'running';
+            secondStartBtn.textContent = '暫停';
+            secondStateLabel.textContent = '倒數中';
+            secondStateLabel.className = 'state-label state-focus';
+            setTimeInputEnabled2(false);
+            
+            timerId2 = setInterval(() => {
+                timeLeft2--;
+                updateDisplay();
+                
+                if (timeLeft2 <= 0) {
+                    clearInterval(timerId2);
+                    timerId2 = null;
+                    
+                    secondStateLabel.textContent = "Time's up";
+                    secondStateLabel.style.color = '#f3727f';
+                    
+                    let repeat = 0;
+                    function playTimesUpSequence() {
+                        playBeep(800, 0.15);
+                        setTimeout(() => playBeep(800, 0.15), 300);
+                        setTimeout(() => playBeep(800, 0.15), 600);
+                        setTimeout(() => playBeep(800, 0.15), 900);
+                        setTimeout(() => playBeep(1200, 0.5), 1200);
+                    }
+                    
+                    function playThreeTimes() {
+                        if (repeat < 3) {
+                            playTimesUpSequence();
+                            repeat++;
+                            setTimeout(playThreeTimes, 1500);
+                        } else {
+                            state2 = 'finished';
+                            secondStartBtn.textContent = '開始';
+                            setTimeInputEnabled2(true);
+                        }
+                    }
+                    playThreeTimes();
+                }
+            }, 1000);
+        }
+
+        function pauseTimer2() {
+            if (state2 !== 'running') return;
+            clearInterval(timerId2);
+            state2 = 'paused';
+            secondStartBtn.textContent = '繼續';
+        }
+
+        function resetTimer2() {
+            clearInterval(timerId2);
+            timerId2 = null;
+            state2 = 'ready';
+            timeLeft2 = time2 * 60;
+            secondStateLabel.textContent = '倒數計時';
+            secondStateLabel.style.color = '';
+            secondStateLabel.className = 'state-label state-focus';
+            secondStartBtn.textContent = '開始';
+            setTimeInputEnabled2(true);
+            updateDisplay();
+            playNotification();
+        }
+
+        startBtn.addEventListener('click', () => {
+            if (audioCtx.state === 'suspended') {
+                audioCtx.resume();
+            }
+            if (state === 'running') {
+                pauseTimer();
+            } else {
+                startTimer();
+            }
+        });
+
+        resetBtn.addEventListener('click', resetTimer);
+
+        function setTimeInputsEnabled(enabled) {
+            const btns = [focusDecBtn, focusIncBtn, relaxDecBtn, relaxIncBtn];
+            btns.forEach(btn => {
+                btn.style.opacity = enabled ? '' : '0.3';
+                btn.style.pointerEvents = enabled ? '' : 'none';
+            });
+        }
+
+        function setTimeInputEnabled2(enabled) {
+            const btns = [document.getElementById('timeDec2'), document.getElementById('timeInc2')];
+            btns.forEach(btn => {
+                btn.style.opacity = enabled ? '' : '0.3';
+                btn.style.pointerEvents = enabled ? '' : 'none';
+            });
+        }
+
+        focusDecBtn.addEventListener('click', () => {
+            if (focusTime > 1 && state === 'ready') {
+                focusTime--;
+                focusDisplay.textContent = focusTime;
+                if (isFocus) {
+                    timeLeft = focusTime * 60;
+                    updateDisplay();
+                }
+            }
+        });
+
+        focusIncBtn.addEventListener('click', () => {
+            if (focusTime < 120 && state === 'ready') {
+                focusTime++;
+                focusDisplay.textContent = focusTime;
+                if (isFocus) {
+                    timeLeft = focusTime * 60;
+                    updateDisplay();
+                }
+            }
+        });
+
+        relaxDecBtn.addEventListener('click', () => {
+            if (relaxTime > 1 && state === 'ready') {
+                relaxTime--;
+                relaxDisplay.textContent = relaxTime;
+                if (!isFocus) {
+                    timeLeft = relaxTime * 60;
+                    updateDisplay();
+                }
+            }
+        });
+
+        relaxIncBtn.addEventListener('click', () => {
+            if (relaxTime < 60 && state === 'ready') {
+                relaxTime++;
+                relaxDisplay.textContent = relaxTime;
+                if (!isFocus) {
+                    timeLeft = relaxTime * 60;
+                    updateDisplay();
+                }
+            }
+        });
+
+        secondStartBtn.addEventListener('click', () => {
+            if (audioCtx.state === 'suspended') {
+                audioCtx.resume();
+            }
+            if (state2 === 'running') {
+                pauseTimer2();
+            } else if (state2 === 'ready' || state2 === 'paused' || state2 === 'finished') {
+                timeLeft2 = time2 * 60;
+                updateDisplay();
+                secondStateLabel.textContent = '倒數中';
+                secondStateLabel.style.color = '';
+                secondStateLabel.className = 'state-label state-focus';
+                startTimer2();
+            }
+        });
+
+        secondResetBtn.addEventListener('click', resetTimer2);
+
+        document.getElementById('timeDec2').addEventListener('click', () => {
+            if (time2 > 1) {
+                time2--;
+                timeDisplay2.textContent = time2;
+                if (state2 === 'ready') {
+                    timeLeft2 = time2 * 60;
+                    updateDisplay();
+                }
+            }
+        });
+
+        document.getElementById('timeInc2').addEventListener('click', () => {
+            if (time2 < 60) {
+                time2++;
+                timeDisplay2.textContent = time2;
+                if (state2 === 'ready') {
+                    timeLeft2 = time2 * 60;
+                    updateDisplay();
+                }
+            }
+        });
+
+        updateDisplay();
+        updateStateUI();
+        updateStateUI2();
+
+        function updateDateTime() {
+            const now = new Date();
+            const weekdays = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+            const year = now.getFullYear();
+            const month = (now.getMonth() + 1).toString().padStart(2, '0');
+            const day = now.getDate().toString().padStart(2, '0');
+            const weekday = weekdays[now.getDay()];
+            const hours = now.getHours().toString().padStart(2, '0');
+            const minutes = now.getMinutes().toString().padStart(2, '0');
+            const seconds = now.getSeconds().toString().padStart(2, '0');
+            
+            document.getElementById('currentDate').textContent = `${year}/${month}/${day} ${weekday}`;
+            document.getElementById('currentTime').textContent = `${hours}:${minutes}:${seconds}`;
+        }
+        
+        updateDateTime();
+        setInterval(updateDateTime, 1000);
+
+        audioCtx.resume().catch(() => {});
+    </script>
+</body>
+</html>
